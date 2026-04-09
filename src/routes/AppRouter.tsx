@@ -11,11 +11,7 @@ import DashboardPage from "@/pages/dashboard/Dashboard";
 import CreateCoursePage from "@/pages/dashboard/CreateCourse";
 import ManageUsersPage from "@/pages/dashboard/ManageUsers";
 import CoursesPage from "@/pages/dashboard/Courses";
-
-// Placeholder for missing pages
-const EnrollmentsPage = () => (
-  <div className="container mx-auto px-4 py-10">Enrollments Page</div>
-);
+import EnrollmentsPage from "../pages/dashboard/Enrollments";
 
 export default function AppRouter() {
   return (

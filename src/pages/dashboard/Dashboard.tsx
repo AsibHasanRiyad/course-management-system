@@ -323,10 +323,19 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           <Card className="rounded-xl border-2 shadow-none">
-            <CardHeader>
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle className="text-xl font-black tracking-tighter uppercase">
-                {isAdmin ? "Recent Enrollments" : "My Recent Courses"}
+                {isAdmin ? "Recent Enrollments" : "My Recent Enrollments"}
               </CardTitle>
+              <Button
+                variant="outline"
+                asChild
+                className="rounded-xl font-bold uppercase tracking-widest"
+              >
+                <Link to="/dashboard/enrollments">
+                  {isAdmin ? "Review All" : "View All"}
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {enrollmentsLoading ? (
@@ -468,6 +477,16 @@ export default function DashboardPage() {
               >
                 <Link to="/courses">
                   <BookOpen className="mr-2 h-4 w-4" /> Browse Courses
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start rounded-xl font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
+                asChild
+              >
+                <Link to="/dashboard/enrollments">
+                  <Clock className="mr-2 h-4 w-4" />
+                  {isAdmin ? "Manage Enrollments" : "My Enrollments"}
                 </Link>
               </Button>
               {isAdmin && (

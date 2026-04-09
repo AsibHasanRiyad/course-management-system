@@ -121,6 +121,12 @@ export interface EnrollmentCreateRequest {
   paymentStatus?: PaymentStatus;
 }
 
+export interface EnrollmentUpdateRequest {
+  paymentDate?: string;
+  paymentStatus: PaymentStatus;
+  status: EnrollmentStatus;
+}
+
 export const PaymentStatus = {
   Pending: 1,
   Completed: 2,

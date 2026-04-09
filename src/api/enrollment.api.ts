@@ -1,5 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ApiResponse, Enrollment } from "@/type";
+import type {
+  ApiResponse,
+  Enrollment,
+  EnrollmentCreateRequest,
+  EnrollmentUpdateRequest,
+} from "@/type";
 import apiClient from "../utils/axios";
 
 export const enrollmentApi = {
@@ -12,9 +16,9 @@ export const enrollmentApi = {
     apiClient.get<ApiResponse<Enrollment[]>>(
       `/api/Enrollments/course/${courseId}`,
     ),
-  create: (data: any) =>
+  create: (data: EnrollmentCreateRequest) =>
     apiClient.post<ApiResponse<Enrollment>>("/api/Enrollments", data),
-  update: (id: number, data: any) =>
+  update: (id: number, data: EnrollmentUpdateRequest) =>
     apiClient.put<ApiResponse<Enrollment>>(`/api/Enrollments/${id}`, data),
   delete: (id: number) =>
     apiClient.delete<ApiResponse<null>>(`/api/Enrollments/${id}`),
