@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { enrollmentApi } from "../../api/enrollment.api";
 import { courseApi } from "../../api/course.api";
 import { userApi } from "../../api/user.api";
+import { weatherApi } from "../../api/weather.api";
 
 import {
   Card,
@@ -21,9 +22,17 @@ import {
   Plus,
   TrendingUp,
   Clock,
+  CloudSun,
+  Thermometer,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { ApiResponse, Course, Enrollment, User } from "@/type";
+import type {
+  ApiResponse,
+  Course,
+  Enrollment,
+  User,
+  WeatherForecast,
+} from "@/type";
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
@@ -59,9 +68,21 @@ export default function DashboardPage() {
     enabled: isAdmin,
   });
 
+  const { data: weatherForecast, isLoading: weatherLoading } = useQuery<
+    WeatherForecast[]
+  >({
+    queryKey: ["weather-forecast"],
+    queryFn: async () => {
+      const response = await weatherApi.getForecast();
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
   const enrollmentItems = enrollments?.data ?? [];
   const courseItems = courses?.data ?? [];
   const userItems = users?.data ?? [];
+  const todayWeather = weatherForecast?.[0];
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -242,6 +263,69 @@ export default function DashboardPage() {
                     <Users className="mr-2 h-4 w-4" /> Manage Users
                   </Link>
                 </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-xl border-2 shadow-none overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-sky-50 to-indigo-50">
+              <CardTitle className="flex items-center gap-2 text-xl font-black uppercase tracking-tighter">
+                <CloudSun className="h-5 w-5 text-sky-600" /> Weather Forecast
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 p-5">
+              {weatherLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+                </div>
+              ) : todayWeather ? (
+                <>
+                  <div className="rounded-xl bg-zinc-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                      Today
+                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-3xl font-black tracking-tighter text-zinc-900">
+                          {todayWeather.temperatureC}°C
+                        </p>
+                        <p className="text-sm text-zinc-500">
+                          {todayWeather.temperatureF}°F • {todayWeather.summary}
+                        </p>
+                      </div>
+                      <div className="rounded-full bg-sky-100 p-3 text-sky-700">
+                        <Thermometer className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {weatherForecast?.slice(1, 4).map((item) => (
+                      <div
+                        key={item.date}
+                        className="flex items-center justify-between rounded-xl border px-3 py-2"
+                      >
+                        <div>
+                          <p className="text-sm font-bold uppercase tracking-wide text-zinc-900">
+                            {new Date(item.date).toLocaleDateString(undefined, {
+                              weekday: "short",
+                            })}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {item.summary}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold text-zinc-700">
+                          {item.temperatureC}°C
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-zinc-500">
+                  Weather data is not available right now.
+                </p>
               )}
             </CardContent>
           </Card>

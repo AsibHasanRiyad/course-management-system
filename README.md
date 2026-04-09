@@ -1,6 +1,6 @@
 # 📚 Course Management System
 
-A modern, full-featured **Course Management System** built with **React** and **shadcn/ui**, integrated with the ICT Bangladesh REST API. The application supports role-based access for both **Admin** and **regular Users**, with a clean and responsive UI.
+A responsive **Course Management System** built with **React, TypeScript, Vite, Tailwind CSS, and shadcn/ui**. It integrates with the **ICT Bangladesh Course Management API** and supports both **admin** and **regular user** workflows.
 
 ---
 
@@ -10,53 +10,60 @@ A modern, full-featured **Course Management System** built with **React** and **
 
 ---
 
-## 🔐 Test Credentials
+## ✨ Core Features
 
-| Role  | Email                    | Password    |
-| ----- | ------------------------ | ----------- |
-| Admin | system@admin.com         | password123 |
-| User  | asibhasanriyad@gmail.com | 006007      |
+### 👥 Public & User Features
 
----
-
-## ✨ Features
-
-### 👤 User Features
-
-- User registration and login
-- Browse all available courses
-- Enroll in courses
-- View enrolled courses and progress
-- Manage personal profile
+- Register and log in with API-based authentication
+- Browse all courses and categories
+- View detailed course information
+- Access a personal dashboard
+- Edit profile information
+- Responsive navigation for desktop, tablet, and mobile
 
 ### 🛠️ Admin Features
 
-- Secure admin login
-- Create, update, and delete courses
-- Manage all user accounts
-- View enrollment statistics
-- Dashboard with overview metrics
+- Admin dashboard with overview cards
+- Create new courses from `/admin/courses/new`
+- Manage users from `/admin/users`
+- Update user roles and active status
+- Delete user accounts
+- View dashboard weather widget powered by `/WeatherForecast`
 
 ---
 
 ## 🧰 Tech Stack
 
-| Technology    | Purpose               |
-| ------------- | --------------------- |
-| React         | Frontend framework    |
-| shadcn/ui     | UI component library  |
-| Tailwind CSS  | Utility-first styling |
-| React Router  | Client-side routing   |
-| Axios / Fetch | API communication     |
-| Vercel        | Deployment & hosting  |
+| Technology               | Purpose                       |
+| ------------------------ | ----------------------------- |
+| `React 19`               | Frontend UI                   |
+| `TypeScript`             | Type safety                   |
+| `Vite`                   | Development and build tooling |
+| `Tailwind CSS`           | Styling                       |
+| `shadcn/ui` + `Radix UI` | UI components                 |
+| `React Router`           | Routing                       |
+| `TanStack Query`         | Data fetching and caching     |
+| `Axios`                  | API requests                  |
+| `Sonner`                 | Toast notifications           |
+| `Vercel`                 | Deployment                    |
 
 ---
 
-## 📡 API
+## 📡 API Integration
 
-This project consumes the **ICT Bangladesh Course Management API**.
+This project consumes the REST API hosted at:
 
-📖 API Docs: [https://register.cseconference.org/swagger/index.html](https://register.cseconference.org/swagger/index.html)
+📖 **Swagger Docs:** [https://register.cseconference.org/swagger/index.html](https://register.cseconference.org/swagger/index.html)
+
+### Main API areas used
+
+- `/api/Auth/login`
+- `/api/Auth/register`
+- `/api/Courses`
+- `/api/Categories`
+- `/api/Enrollments`
+- `/api/Users`
+- `/WeatherForecast`
 
 ---
 
@@ -64,89 +71,133 @@ This project consumes the **ICT Bangladesh Course Management API**.
 
 ### Prerequisites
 
-- Node.js (v18 or above)
-- npm or yarn
+- `Node.js` 18+
+- `npm`
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-username/course-management-system.git
-
-# 2. Navigate to the project directory
+git clone https://github.com/AsibHasanRiyad/course-management-system.git
 cd course-management-system
-
-# 3. Install dependencies
 npm install
-
-# 4. Start the development server
 npm run dev
 ```
 
-The app will be running at `http://localhost:5173`.
+App runs at:
+
+```bash
+http://localhost:5173
+```
 
 ---
 
-## 📁 Project Structure
+## 📜 Available Scripts
 
+```bash
+npm run dev      # start development server
+npm run build    # production build
+npm run preview  # preview production build
+npm run lint     # run eslint
 ```
+
+---
+
+## 🗂️ Current Project Structure
+
+```text
+course-management-system/
 ├── public/
 ├── src/
-│   ├── assets/
+│   ├── api/
+│   │   ├── auth.api.ts
+│   │   ├── category.api.ts
+│   │   ├── course.api.ts
+│   │   ├── enrollment.api.ts
+│   │   ├── user.api.ts
+│   │   └── weather.api.ts
 │   ├── components/
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── layout/        # Navbar, Footer, Sidebar
-│   │   └── shared/        # Reusable components
+│   │   ├── layout/
+│   │   │   ├── Footer.tsx
+│   │   │   └── Navbar.tsx
+│   │   ├── shared/
+│   │   │   └── CourseCard.tsx
+│   │   └── ui/
+│   ├── context/
+│   │   └── AuthContext.tsx
+│   ├── hooks/
+│   │   └── useAuth.tsx
+│   ├── layout/
+│   │   ├── AuthLayout.tsx
+│   │   └── MainLayout.tsx
+│   ├── lib/
+│   │   └── utils.ts
 │   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── Login.jsx
-│   │   ├── Register.jsx
-│   │   ├── Courses.jsx
-│   │   ├── CourseDetails.jsx
-│   │   ├── Dashboard.jsx
-│   │   └── admin/         # Admin-only pages
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility functions
-│   ├── services/          # API service functions
-│   ├── context/           # Auth & global state
-│   ├── App.jsx
-│   └── main.jsx
-├── screenshots/           # App screenshots
-├── Project Presentation/  # Demo video
-├── expected.txt           # Expected monthly salary
+│   │   ├── CourseDetails.page.tsx
+│   │   ├── Home.page.tsx
+│   │   ├── Profile.page.tsx
+│   │   ├── auth/
+│   │   │   ├── Login.tsx
+│   │   │   └── Register.tsx
+│   │   └── dashboard/
+│   │       ├── Categories.tsx
+│   │       ├── Courses.tsx
+│   │       ├── CreateCourse.tsx
+│   │       ├── Dashboard.tsx
+│   │       ├── Enrollments.tsx
+│   │       ├── ManageUsers.tsx
+│   │       └── Users.tsx
+│   ├── routes/
+│   │   ├── AppRouter.tsx
+│   │   └── PrivateRoute.tsx
+│   ├── type/
+│   │   └── index.ts
+│   ├── utils/
+│   │   └── axios.ts
+│   ├── App.tsx
+│   ├── index.css
+│   └── main.tsx
 ├── index.html
-├── tailwind.config.js
-├── vite.config.js
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
 └── README.md
 ```
 
 ---
 
-## 📸 Screenshots
+## 🧭 Main Routes
 
-Screenshots of key features are available in the `/screenshots` directory.
+| Route                | Description              |
+| -------------------- | ------------------------ |
+| `/`                  | Home page                |
+| `/courses`           | Browse all courses       |
+| `/courses/:id`       | Course details           |
+| `/categories`        | Category listing         |
+| `/login`             | Login page               |
+| `/register`          | Register page            |
+| `/profile`           | User profile             |
+| `/dashboard`         | Main dashboard           |
+| `/admin/courses/new` | Admin create course page |
+| `/admin/users`       | Admin manage users page  |
 
 ---
 
-## 🎥 Project Presentation
+## 🔐 Demo Credentials
 
-A video walkthrough of the project is available in the `/Project Presentation` directory.
+| Role  | Email                      | Password      |
+| ----- | -------------------------- | ------------- |
+| Admin | `system@admin.com`         | `password123` |
+| User  | `asibhasanriyad@gmail.com` | `006007`      |
 
 ---
 
-## 📦 Build for Production
+## 📦 Production Build
 
 ```bash
 npm run build
 ```
 
-Output will be in the `dist/` folder, ready for deployment.
-
----
-
-## 📄 License
-
-This project was developed as part of an assignment for **ICT Bangladesh**.
+The production output is generated in the `dist/` folder.
 
 ---
 
@@ -154,5 +205,5 @@ This project was developed as part of an assignment for **ICT Bangladesh**.
 
 **Asib Hasan Riyad**
 
-- Email: asibhasanriyad@gmail.com
-- Project submitted to: mrhridoy.me@gmail.com
+- Email: `asibhasanriyad@gmail.com`
+- Submission: `mrhridoy.me@gmail.com`

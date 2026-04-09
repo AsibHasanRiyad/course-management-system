@@ -50,6 +50,13 @@ export interface Course {
   createdAt?: string;
 }
 
+export interface WeatherForecast {
+  date: string;
+  temperatureC: number;
+  temperatureF: number;
+  summary: string;
+}
+
 export interface Enrollment {
   id: number;
   userId: number;
