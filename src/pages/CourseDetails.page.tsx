@@ -20,7 +20,7 @@ import type { ApiResponse, Course } from "@/type";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   const { data: course, isLoading } = useQuery<ApiResponse<Course>>({
     queryKey: ["course", id],
@@ -37,8 +37,28 @@ export default function CourseDetailPage() {
       toast.error("Please login to enroll in this course");
       return;
     }
+
+    if (isAdmin) {
+      toast.error("Admins cannot enroll in courses.");
+      return;
+    }
+
     // Enrollment logic would go here
     toast.success("Enrollment request sent!");
+  };
+
+  const handleWishlist = () => {
+    if (!isAuthenticated) {
+      toast.error("Please login to add this course to your wishlist");
+      return;
+    }
+
+    if (isAdmin) {
+      toast.error("Admins cannot add courses to wishlist.");
+      return;
+    }
+
+    toast.success("Added to wishlist!");
   };
 
   if (isLoading) {
@@ -183,14 +203,17 @@ export default function CourseDetailPage() {
                 <div className="space-y-4">
                   <Button
                     onClick={handleEnroll}
-                    className="w-full h-14 rounded-none font-black uppercase tracking-widest text-lg"
+                    disabled={isAdmin}
+                    className="w-full h-14 rounded-none font-black uppercase tracking-widest text-lg disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Enroll Now
+                    {isAdmin ? "Admins Cannot Enroll" : "Enroll Now"}
                   </Button>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant="outline"
-                      className="rounded-none font-bold uppercase tracking-widest border-2"
+                      onClick={handleWishlist}
+                      disabled={isAdmin}
+                      className="rounded-none font-bold uppercase tracking-widest border-2 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Heart className="mr-2 h-4 w-4" /> Wishlist
                     </Button>

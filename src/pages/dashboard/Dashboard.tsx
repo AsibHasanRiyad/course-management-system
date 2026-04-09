@@ -76,7 +76,7 @@ export default function DashboardPage() {
         </div>
         {isAdmin && (
           <Button
-            className="rounded-xl font-bold uppercase tracking-widest"
+            className="rounded-xl h-12 px-6 font-bold uppercase tracking-widest"
             asChild
           >
             <Link to="/admin/courses/new">

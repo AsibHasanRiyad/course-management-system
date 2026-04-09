@@ -165,7 +165,7 @@ export default function RegisterPage() {
               />
               <Button
                 type="submit"
-                className="w-full rounded-lg font-bold uppercase tracking-widest"
+                className="w-full h-12 px-6 rounded-lg font-bold uppercase tracking-widest"
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

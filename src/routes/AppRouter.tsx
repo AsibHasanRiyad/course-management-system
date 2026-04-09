@@ -8,14 +8,13 @@ import HomePage from "@/pages/Home.page";
 import CourseDetailPage from "@/pages/CourseDetails.page";
 import ProfilePage from "@/pages/Profile.page";
 import DashboardPage from "@/pages/dashboard/Dashboard";
+import CreateCoursePage from "@/pages/dashboard/CreateCourse";
+import ManageUsersPage from "@/pages/dashboard/ManageUsers";
 import CoursesPage from "@/pages/dashboard/Courses";
 
 // Placeholder for missing pages
 const EnrollmentsPage = () => (
   <div className="container mx-auto px-4 py-10">Enrollments Page</div>
-);
-const UsersPage = () => (
-  <div className="container mx-auto px-4 py-10">Users Page</div>
 );
 
 export default function AppRouter() {
@@ -28,6 +27,8 @@ export default function AppRouter() {
         <Route path="courses/:id" element={<CourseDetailPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="admin/courses/new" element={<CreateCoursePage />} />
+        <Route path="admin/users" element={<ManageUsersPage />} />
       </Route>
 
       {/* Auth Routes */}
@@ -40,7 +41,7 @@ export default function AppRouter() {
       <Route path="/dashboard" element={<MainLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="enrollments" element={<EnrollmentsPage />} />
-        <Route path="users" element={<UsersPage />} />
+        <Route path="users" element={<ManageUsersPage />} />
       </Route>
     </Routes>
   );
