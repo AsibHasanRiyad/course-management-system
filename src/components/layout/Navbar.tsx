@@ -34,7 +34,7 @@ export default function Navbar() {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center space-x-2">
               <span className="text-xl font-bold tracking-tighter text-primary">
-                EDUSTREAM
+                ICT Bangladesh
               </span>
             </Link>
             <div className="hidden lg:flex items-center gap-6 text-sm font-medium">
