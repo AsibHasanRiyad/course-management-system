@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { categoryApi } from "../../api/category.api";
 import { enrollmentApi } from "../../api/enrollment.api";
 import { courseApi } from "../../api/course.api";
 import { userApi } from "../../api/user.api";
@@ -13,6 +16,7 @@ import {
 } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
 import {
   Loader2,
   BookOpen,
@@ -24,18 +28,86 @@ import {
   Clock,
   CloudSun,
   Thermometer,
+  Pencil,
+  Trash2,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type {
   ApiResponse,
+  Category,
   Course,
+  CourseCreateRequest,
   Enrollment,
   User,
   WeatherForecast,
 } from "@/type";
 
+interface CourseFormState {
+  title: string;
+  description: string;
+  categoryId: string;
+  price: string;
+  durationHours: string;
+  lectures: string;
+  startAt: string;
+  endAt: string;
+  thumbnailPath: string;
+}
+
+const initialCourseForm: CourseFormState = {
+  title: "",
+  description: "",
+  categoryId: "",
+  price: "",
+  durationHours: "",
+  lectures: "",
+  startAt: "",
+  endAt: "",
+  thumbnailPath: "",
+};
+
 export default function DashboardPage() {
+  const queryClient = useQueryClient();
   const { user, isAdmin } = useAuth();
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [courseModalMode, setCourseModalMode] = useState<"create" | "edit">(
+    "create",
+  );
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [courseForm, setCourseForm] =
+    useState<CourseFormState>(initialCourseForm);
+
+  const openCreateCourseModal = () => {
+    setCourseModalMode("create");
+    setSelectedCourse(null);
+    setCourseForm(initialCourseForm);
+    setIsCourseModalOpen(true);
+  };
+
+  const openEditCourseModal = (course: Course) => {
+    setCourseModalMode("edit");
+    setSelectedCourse(course);
+    setCourseForm({
+      title: course.title,
+      description: course.description || "",
+      categoryId: String(course.categoryId),
+      price: String(course.price ?? ""),
+      durationHours: String(course.durationHours ?? ""),
+      lectures: String(course.lectures ?? ""),
+      startAt: course.startAt?.slice(0, 16) || "",
+      endAt: course.endAt?.slice(0, 16) || "",
+      thumbnailPath: course.thumbnailPath || "",
+    });
+    setIsCourseModalOpen(true);
+  };
+
+  const closeCourseModal = () => {
+    setIsCourseModalOpen(false);
+    setSelectedCourse(null);
+    setCourseForm(initialCourseForm);
+  };
 
   const { data: enrollments, isLoading: enrollmentsLoading } = useQuery<
     ApiResponse<Enrollment[]>
@@ -68,6 +140,15 @@ export default function DashboardPage() {
     enabled: isAdmin,
   });
 
+  const { data: categories } = useQuery<ApiResponse<Category[]>>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await categoryApi.getAll();
+      return response.data;
+    },
+    enabled: isAdmin,
+  });
+
   const { data: weatherForecast, isLoading: weatherLoading } = useQuery<
     WeatherForecast[]
   >({
@@ -82,7 +163,72 @@ export default function DashboardPage() {
   const enrollmentItems = enrollments?.data ?? [];
   const courseItems = courses?.data ?? [];
   const userItems = users?.data ?? [];
+  const categoryItems = categories?.data ?? [];
   const todayWeather = weatherForecast?.[0];
+
+  const saveCourse = useMutation({
+    mutationFn: async () => {
+      const payload: CourseCreateRequest = {
+        title: courseForm.title.trim(),
+        description: courseForm.description.trim() || undefined,
+        categoryId: Number(courseForm.categoryId),
+        price: courseForm.price ? Number(courseForm.price) : undefined,
+        durationHours: courseForm.durationHours
+          ? Number(courseForm.durationHours)
+          : undefined,
+        lectures: courseForm.lectures ? Number(courseForm.lectures) : undefined,
+        startAt: courseForm.startAt || undefined,
+        endAt: courseForm.endAt || undefined,
+        thumbnailPath: courseForm.thumbnailPath.trim() || undefined,
+      };
+
+      const response = selectedCourse
+        ? await courseApi.update(selectedCourse.id, payload)
+        : await courseApi.create(payload);
+
+      return response.data;
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      toast.success(
+        response.message ||
+          (selectedCourse
+            ? "Course updated successfully"
+            : "Course created successfully"),
+      );
+      closeCourseModal();
+    },
+    onError: (error: unknown) => {
+      const apiError = error as {
+        response?: { data?: { message?: string } };
+      };
+      console.error("Save course failed:", apiError.response?.data || error);
+      toast.error(apiError.response?.data?.message || "Failed to save course.");
+    },
+  });
+
+  const deleteCourse = useMutation({
+    mutationFn: async (courseId: number) => {
+      const response = await courseApi.delete(courseId);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      toast.success(response.message || "Course deleted successfully");
+      setCourseToDelete(null);
+    },
+    onError: (error: unknown) => {
+      const apiError = error as {
+        response?: { data?: { message?: string } };
+      };
+      console.error("Delete course failed:", apiError.response?.data || error);
+      toast.error(
+        apiError.response?.data?.message || "Failed to delete course.",
+      );
+    },
+  });
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -97,12 +243,10 @@ export default function DashboardPage() {
         </div>
         {isAdmin && (
           <Button
-            className="rounded-xl h-12 px-6 font-bold uppercase tracking-widest"
-            asChild
+            className="h-12 rounded-xl px-6 font-bold uppercase tracking-widest"
+            onClick={openCreateCourseModal}
           >
-            <Link to="/admin/courses/new">
-              <Plus className="mr-2 h-4 w-4" /> Create Course
-            </Link>
+            <Plus className="mr-2 h-4 w-4" /> Create Course
           </Button>
         )}
       </div>
@@ -225,6 +369,79 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card className="rounded-xl border-2 shadow-none">
+              <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle className="text-xl font-black tracking-tighter uppercase">
+                    Manage Courses
+                  </CardTitle>
+                  <p className="text-sm text-zinc-500">
+                    Add, edit, and delete courses from one place.
+                  </p>
+                </div>
+                <Button
+                  className="h-11 rounded-xl px-5 font-bold uppercase tracking-widest"
+                  onClick={openCreateCourseModal}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Course
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {courseItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {courseItems.map((course) => (
+                      <div
+                        key={course.id}
+                        className="flex flex-col gap-4 rounded-xl border p-4 lg:flex-row lg:items-center lg:justify-between"
+                      >
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-lg font-black tracking-tight text-zinc-900">
+                              {course.title}
+                            </p>
+                            <Badge variant="secondary" className="rounded-xl">
+                              {course.categoryName ||
+                                `Category #${course.categoryId}`}
+                            </Badge>
+                          </div>
+                          <p className="line-clamp-2 text-sm max-w-96 text-zinc-500">
+                            {course.description || "No description available."}
+                          </p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                            ${course.price || 0} • {course.durationHours || 0}h
+                            • {course.lectures || 0} lectures
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            className="rounded-xl font-bold uppercase tracking-widest"
+                            onClick={() => openEditCourseModal(course)}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            className="rounded-xl font-bold uppercase tracking-widest"
+                            onClick={() => setCourseToDelete(course)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-zinc-500">
+                    No courses available yet.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-8">
@@ -267,8 +484,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl border-2 shadow-none overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-sky-50 to-indigo-50">
+          <Card className="overflow-hidden rounded-xl border-2 shadow-none">
+            <CardHeader className="bg-linear-to-r from-sky-50 to-indigo-50">
               <CardTitle className="flex items-center gap-2 text-xl font-black uppercase tracking-tighter">
                 <CloudSun className="h-5 w-5 text-sky-600" /> Weather Forecast
               </CardTitle>
@@ -331,6 +548,270 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      {isCourseModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-2xl border bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b px-5 py-4">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter">
+                  {courseModalMode === "create" ? "Add Course" : "Edit Course"}
+                </h2>
+                <p className="text-sm text-zinc-500">
+                  Fill in the course details and save your changes.
+                </p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={closeCourseModal}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <form
+              className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveCourse.mutate();
+              }}
+            >
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Course Title
+                </label>
+                <Input
+                  value={courseForm.title}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                  placeholder="AI-Based Software Engineering Bootcamp"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Description
+                </label>
+                <textarea
+                  value={courseForm.description}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  rows={4}
+                  className="flex w-full rounded-xl border border-zinc-300 bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-zinc-800"
+                  placeholder="Describe what students will learn in this course"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Category
+                </label>
+                <select
+                  value={courseForm.categoryId}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      categoryId: e.target.value,
+                    }))
+                  }
+                  className="flex h-11 w-full rounded-xl border border-zinc-300 bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-zinc-800"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categoryItems.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Thumbnail Path
+                </label>
+                <Input
+                  value={courseForm.thumbnailPath}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      thumbnailPath: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                  placeholder="/uploads/courses/course-thumbnail.png"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Price
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={courseForm.price}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      price: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                  placeholder="15000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Duration Hours
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={courseForm.durationHours}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      durationHours: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                  placeholder="40"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Lectures
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={courseForm.lectures}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      lectures: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                  placeholder="12"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  Start Date & Time
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={courseForm.startAt}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      startAt: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  End Date & Time
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={courseForm.endAt}
+                  onChange={(e) =>
+                    setCourseForm((prev) => ({
+                      ...prev,
+                      endAt: e.target.value,
+                    }))
+                  }
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-2 md:col-span-2">
+                <Button
+                  type="submit"
+                  className="h-12 rounded-xl px-6 font-bold uppercase tracking-widest"
+                  disabled={
+                    saveCourse.isPending ||
+                    !courseForm.title.trim() ||
+                    !courseForm.categoryId
+                  }
+                >
+                  {saveCourse.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : courseModalMode === "create" ? (
+                    <Plus className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Pencil className="mr-2 h-4 w-4" />
+                  )}
+                  {courseModalMode === "create"
+                    ? "Create Course"
+                    : "Save Changes"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 rounded-xl px-6 font-bold uppercase tracking-widest"
+                  onClick={closeCourseModal}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {courseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl">
+            <h2 className="text-2xl font-black uppercase tracking-tighter text-zinc-900">
+              Delete Course
+            </h2>
+            <p className="mt-3 text-sm text-zinc-500">
+              Are you sure you want to delete{" "}
+              <strong>{courseToDelete.title}</strong>? This action cannot be
+              undone.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button
+                variant="destructive"
+                className="h-11 rounded-xl px-5 font-bold uppercase tracking-widest"
+                disabled={deleteCourse.isPending}
+                onClick={() => deleteCourse.mutate(courseToDelete.id)}
+              >
+                {deleteCourse.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 rounded-xl px-5 font-bold uppercase tracking-widest"
+                onClick={() => setCourseToDelete(null)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
