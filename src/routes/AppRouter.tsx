@@ -6,6 +6,7 @@ import MainLayout from "@/layout/MainLayout";
 import AuthLayout from "@/layout/AuthLayout";
 import HomePage from "@/pages/Home.page";
 import CourseDetailPage from "@/pages/CourseDetails.page";
+import ProfilePage from "@/pages/Profile.page";
 import DashboardPage from "@/pages/dashboard/Dashboard";
 import CoursesPage from "@/pages/dashboard/Courses";
 
@@ -26,6 +27,7 @@ export default function AppRouter() {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="courses/:id" element={<CourseDetailPage />} />
         <Route path="categories" element={<CategoriesPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* Auth Routes */}

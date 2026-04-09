@@ -12,23 +12,25 @@ import {
   Zap,
   BookOpen,
 } from "lucide-react";
-import type { Category, Course } from "@/type";
+import type { ApiResponse, Category, Course } from "@/type";
 
 export default function HomePage() {
-  const { data: courses, isLoading: coursesLoading } = useQuery<Course[]>({
+  const { data: courses, isLoading: coursesLoading } = useQuery<
+    ApiResponse<Course[]>
+  >({
     queryKey: ["courses"],
     queryFn: async () => {
-      const response = await axios.get(
+      const response = await axios.get<ApiResponse<Course[]>>(
         "https://register.cseconference.org/api/Courses",
       );
       return response.data;
     },
   });
 
-  const { data: categories } = useQuery<Category[]>({
+  const { data: categories } = useQuery<ApiResponse<Category[]>>({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await axios.get(
+      const response = await axios.get<ApiResponse<Category[]>>(
         "https://register.cseconference.org/api/Categories",
       );
       return response.data;
@@ -57,7 +59,7 @@ export default function HomePage() {
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="rounded-none h-14 px-8 font-bold uppercase tracking-widest"
+                className="rounded-xl h-14 px-8 font-bold uppercase tracking-widest"
                 asChild
               >
                 <Link to="/courses">Explore Courses</Link>
@@ -65,7 +67,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-none h-14 px-8 font-bold uppercase tracking-widest border-2"
+                className="rounded-xl h-14 px-8 font-bold uppercase tracking-widest border-2"
                 asChild
               >
                 <Link to="/register">Join for Free</Link>
@@ -150,11 +152,11 @@ export default function HomePage() {
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {categories?.slice(0, 6).map((category) => (
+            {categories?.data?.slice(0, 6).map((category) => (
               <Link
                 key={category.id}
                 to={`/courses?category=${category.id}`}
-                className="group flex flex-col items-center justify-center border border-zinc-200 bg-white p-8 text-center transition-all hover:border-zinc-900 hover:shadow-md"
+                className="group rounded-xl flex flex-col items-center justify-center border border-zinc-200 bg-white p-8 text-center transition-all hover:border-zinc-900 hover:shadow-md"
               >
                 <div className="mb-4 rounded-full bg-zinc-50 p-4 transition-colors group-hover:bg-zinc-100">
                   <BookOpen className="h-6 w-6" />
@@ -197,7 +199,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {courses?.slice(0, 6).map((course) => (
+              {courses?.data?.slice(0, 6).map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
             </div>
@@ -206,7 +208,7 @@ export default function HomePage() {
           <div className="mt-16 text-center md:hidden">
             <Button
               size="lg"
-              className="rounded-none w-full font-bold uppercase tracking-widest"
+              className="rounded-xl w-full font-bold uppercase tracking-widest"
               asChild
             >
               <Link to="/courses">View All Courses</Link>
@@ -228,7 +230,7 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-4">
             <Button
               size="lg"
-              className="bg-white text-black hover:bg-zinc-200 rounded-none h-14 px-10 font-bold uppercase tracking-widest"
+              className="bg-white text-black  rounded-xl h-14 px-10 font-bold uppercase tracking-widest"
               asChild
             >
               <Link to="/register">Get Started Now</Link>

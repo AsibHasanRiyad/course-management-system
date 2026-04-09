@@ -5,10 +5,10 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Loader2, BookOpen, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Category } from "@/type";
+import type { ApiResponse, Category } from "@/type";
 
 export default function CategoriesPage() {
-  const { data: categories, isLoading } = useQuery<Category[]>({
+  const { data: categories, isLoading } = useQuery<ApiResponse<Category[]>>({
     queryKey: ["categories"],
     queryFn: async () => {
       const response = await categoryApi.getAll();
@@ -34,10 +34,10 @@ export default function CategoriesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {categories?.map((category) => (
+          {categories?.data?.map((category) => (
             <Card
               key={category.id}
-              className="group rounded-none border-2 border-zinc-200 transition-all hover:border-zinc-900"
+              className="group rounded-xl border-2 border-zinc-200 transition-all hover:border-zinc-900"
             >
               <CardContent className="p-8">
                 <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-zinc-50 transition-colors group-hover:bg-zinc-100">

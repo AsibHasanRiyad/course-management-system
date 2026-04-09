@@ -23,13 +23,13 @@ import {
   Clock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Course, Enrollment, User } from "@/type";
+import type { ApiResponse, Course, Enrollment, User } from "@/type";
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
 
   const { data: enrollments, isLoading: enrollmentsLoading } = useQuery<
-    Enrollment[]
+    ApiResponse<Enrollment[]>
   >({
     queryKey: ["enrollments", user?.id],
     queryFn: async () => {
@@ -41,7 +41,7 @@ export default function DashboardPage() {
     enabled: !!user,
   });
 
-  const { data: courses } = useQuery<Course[]>({
+  const { data: courses } = useQuery<ApiResponse<Course[]>>({
     queryKey: ["admin-courses"],
     queryFn: async () => {
       const response = await courseApi.getAll();
@@ -50,7 +50,7 @@ export default function DashboardPage() {
     enabled: isAdmin,
   });
 
-  const { data: users } = useQuery<User[]>({
+  const { data: users } = useQuery<ApiResponse<User[]>>({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const response = await userApi.getAll();
@@ -58,6 +58,10 @@ export default function DashboardPage() {
     },
     enabled: isAdmin,
   });
+
+  const enrollmentItems = enrollments?.data ?? [];
+  const courseItems = courses?.data ?? [];
+  const userItems = users?.data ?? [];
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -72,7 +76,7 @@ export default function DashboardPage() {
         </div>
         {isAdmin && (
           <Button
-            className="rounded-none font-bold uppercase tracking-widest"
+            className="rounded-xl font-bold uppercase tracking-widest"
             asChild
           >
             <Link to="/admin/courses/new">
@@ -84,7 +88,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
-        <Card className="rounded-none border-2 shadow-none">
+        <Card className="rounded-xl border-2 shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
               {isAdmin ? "Total Enrollments" : "My Courses"}
@@ -93,7 +97,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black tracking-tighter">
-              {enrollments?.length || 0}
+              {enrollmentItems.length}
             </div>
             <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
               <TrendingUp className="h-3 w-3 text-green-500" /> +2 from last
@@ -104,7 +108,7 @@ export default function DashboardPage() {
 
         {isAdmin && (
           <>
-            <Card className="rounded-none border-2 shadow-none">
+            <Card className="rounded-xl border-2 shadow-none">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
                   Total Students
@@ -113,12 +117,12 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-black tracking-tighter">
-                  {users?.length || 0}
+                  {userItems.length}
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">Active learners</p>
               </CardContent>
             </Card>
-            <Card className="rounded-none border-2 shadow-none">
+            <Card className="rounded-xl border-2 shadow-none">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
                   Active Courses
@@ -127,7 +131,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-black tracking-tighter">
-                  {courses?.length || 0}
+                  {courseItems.length}
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
                   Across 5 categories
@@ -137,7 +141,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        <Card className="rounded-none border-2 shadow-none">
+        <Card className="rounded-xl border-2 shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">
               Learning Hours
@@ -153,7 +157,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <Card className="rounded-none border-2 shadow-none">
+          <Card className="rounded-xl border-2 shadow-none">
             <CardHeader>
               <CardTitle className="text-xl font-black tracking-tighter uppercase">
                 {isAdmin ? "Recent Enrollments" : "My Recent Courses"}
@@ -164,9 +168,9 @@ export default function DashboardPage() {
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
                 </div>
-              ) : enrollments && enrollments.length > 0 ? (
+              ) : enrollmentItems.length > 0 ? (
                 <div className="space-y-6">
-                  {enrollments.slice(0, 5).map((enrollment) => (
+                  {enrollmentItems.slice(0, 5).map((enrollment) => (
                     <div
                       key={enrollment.id}
                       className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
@@ -186,7 +190,7 @@ export default function DashboardPage() {
                         variant={
                           enrollment.status === 1 ? "default" : "secondary"
                         }
-                        className="rounded-none uppercase tracking-widest text-[10px]"
+                        className="rounded-xl uppercase tracking-widest text-[10px]"
                       >
                         {enrollment.status === 1 ? "Active" : "Completed"}
                       </Badge>
@@ -203,7 +207,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-8">
-          <Card className="rounded-none border-2 shadow-none bg-zinc-900 text-white">
+          <Card className="rounded-xl border-2 shadow-none bg-zinc-900 text-white">
             <CardHeader>
               <CardTitle className="text-xl font-black tracking-tighter uppercase">
                 Quick Actions
@@ -212,7 +216,7 @@ export default function DashboardPage() {
             <CardContent className="space-y-4">
               <Button
                 variant="outline"
-                className="w-full justify-start rounded-none font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
+                className="w-full justify-start rounded-xl font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
                 asChild
               >
                 <Link to="/profile">
@@ -221,7 +225,7 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start rounded-none font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
+                className="w-full justify-start rounded-xl font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
                 asChild
               >
                 <Link to="/courses">
@@ -231,7 +235,7 @@ export default function DashboardPage() {
               {isAdmin && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start rounded-none font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
+                  className="w-full justify-start rounded-xl font-bold uppercase tracking-widest border-zinc-700 bg-transparent hover:bg-zinc-800 hover:text-white"
                   asChild
                 >
                   <Link to="/admin/users">

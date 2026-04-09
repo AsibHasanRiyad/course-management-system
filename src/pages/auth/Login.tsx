@@ -26,6 +26,7 @@ import {
 } from "../../components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { UserRole, type User } from "@/type";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -51,11 +52,27 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const response = await authApi.login(values);
-      const { token, user } = response.data;
-      login(user, token);
-      toast.success("Logged in successfully");
+      console.log("Login API response:", response.data);
+
+      const authData = response.data.data;
+      const normalizedUser: User = {
+        id: authData.userId,
+        name: authData.name,
+        email: authData.email,
+        roleId:
+          authData.role?.toLowerCase() === "admin"
+            ? UserRole.Admin
+            : authData.role?.toLowerCase() === "instructor"
+              ? UserRole.Instructor
+              : UserRole.User,
+        isActive: true,
+      };
+
+      login(normalizedUser, authData.token);
+      toast.success(response.data.message || "Logged in successfully");
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Login failed:", error.response?.data || error);
       toast.error(
         error.response?.data?.message ||
           "Failed to login. Please check your credentials.",
@@ -91,7 +108,7 @@ export default function LoginPage() {
                       <Input
                         placeholder="name@example.com"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -111,7 +128,7 @@ export default function LoginPage() {
                         type="password"
                         placeholder="••••••••"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -120,7 +137,7 @@ export default function LoginPage() {
               />
               <Button
                 type="submit"
-                className="w-full rounded-none font-bold uppercase tracking-widest"
+                className="w-full rounded-lg font-bold uppercase tracking-widest"
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

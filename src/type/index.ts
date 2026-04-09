@@ -4,6 +4,7 @@ export interface User {
   name: string;
   email: string;
   roleId: number;
+  roleName?: string;
   isActive: boolean;
   phoneNumber?: string;
   address?: string;
@@ -15,6 +16,13 @@ export interface Role {
   id: number;
   name: string;
   description?: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  errors?: string[] | null;
 }
 
 export interface Category {
@@ -57,8 +65,12 @@ export interface Enrollment {
 }
 
 export interface AuthResponse {
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
   token: string;
-  user: User;
+  expiresAt?: string;
 }
 
 export interface LoginRequest {

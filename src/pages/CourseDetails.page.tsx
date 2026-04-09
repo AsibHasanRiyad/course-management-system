@@ -16,19 +16,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
-import type { Course } from "@/type";
+import type { ApiResponse, Course } from "@/type";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
 
-  const { data: course, isLoading } = useQuery<Course>({
+  const { data: course, isLoading } = useQuery<ApiResponse<Course>>({
     queryKey: ["course", id],
     queryFn: async () => {
       const response = await courseApi.getById(Number(id));
       return response.data;
     },
   });
+
+  const courseData = course?.data;
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -47,7 +49,7 @@ export default function CourseDetailPage() {
     );
   }
 
-  if (!course) {
+  if (!courseData) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-bold uppercase tracking-tight mb-4">
@@ -79,47 +81,44 @@ export default function CourseDetailPage() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
             <div className="space-y-6">
               <Badge className="bg-white text-black hover:bg-zinc-200 rounded-none uppercase tracking-widest">
-                {course.categoryName || "General"}
+                {courseData.categoryName || "General"}
               </Badge>
               <h1 className="text-4xl font-black tracking-tighter uppercase md:text-6xl">
-                {course.title}
+                {courseData.title}
               </h1>
               <p className="text-xl text-zinc-400 leading-relaxed max-w-xl">
-                {course.description ||
+                {courseData.description ||
                   "Master the skills needed for the modern professional landscape with this comprehensive course."}
               </p>
               <div className="flex flex-wrap gap-6 text-sm font-bold uppercase tracking-widest text-zinc-300">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <span>{course.durationHours || 0} Hours</span>
+                  <span>{courseData.durationHours || 0} Hours</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  <span>{course.lectures || 0} Lectures</span>
+                  <span>{courseData.lectures || 0} Lectures</span>
                 </div>
-                {course.startAt && (
+                {courseData.startAt && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      Starts {new Date(course.startAt).toLocaleDateString()}
+                      Starts {new Date(courseData.startAt).toLocaleDateString()}
                     </span>
                   </div>
                 )}
               </div>
             </div>
             <div className="relative aspect-video overflow-hidden border-4 border-white/10 bg-zinc-800 shadow-2xl">
-              {course.thumbnailPath ? (
-                <img
-                  src={course.thumbnailPath}
-                  alt={course.title}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-zinc-600">
-                  <BookOpen className="h-20 w-20" />
-                </div>
-              )}
+              <img
+                src={
+                  courseData.thumbnailPath ||
+                  "https://foundr.com/wp-content/uploads/2021/09/Best-online-course-platforms.png"
+                }
+                alt={courseData.title}
+                className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             </div>
           </div>
         </div>
@@ -136,7 +135,7 @@ export default function CourseDetailPage() {
                 </h2>
                 <div className="prose prose-zinc max-w-none text-zinc-600 leading-relaxed">
                   <p>
-                    {course.description ||
+                    {courseData.description ||
                       "Detailed course description will be available soon."}
                   </p>
                   <p className="mt-4">
@@ -175,10 +174,10 @@ export default function CourseDetailPage() {
               <div className="border-4 border-zinc-900 p-8 bg-white sticky top-24">
                 <div className="mb-6 flex items-baseline gap-2">
                   <span className="text-4xl font-black tracking-tighter">
-                    ${course.price || 0}
+                    ${courseData.price || 0}
                   </span>
                   <span className="text-zinc-400 line-through text-lg font-bold">
-                    ${(course.price || 0) * 1.5}
+                    ${(courseData.price || 0) * 1.5}
                   </span>
                 </div>
                 <div className="space-y-4">

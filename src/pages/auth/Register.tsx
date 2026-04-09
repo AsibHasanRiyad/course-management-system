@@ -97,7 +97,7 @@ export default function RegisterPage() {
                       <Input
                         placeholder="John Doe"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                       <Input
                         placeholder="name@example.com"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="••••••••"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="••••••••"
                         {...field}
-                        className="rounded-none border-zinc-300 focus-visible:ring-zinc-800"
+                        className="rounded-lg border-zinc-300 focus-visible:ring-zinc-800"
                       />
                     </FormControl>
                     <FormMessage />
@@ -165,7 +165,7 @@ export default function RegisterPage() {
               />
               <Button
                 type="submit"
-                className="w-full rounded-none font-bold uppercase tracking-widest"
+                className="w-full rounded-lg font-bold uppercase tracking-widest"
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
